@@ -1,7 +1,7 @@
 import os
 import warnings
 import streamlit.components.v1 as components
-from typing import Optional, Union, Callable, Literal
+from typing import Optional, Union, Callable
 
 from st_link_analysis.component.layouts import LAYOUTS
 from st_link_analysis.component.styles import NodeStyle, EdgeStyle
@@ -16,7 +16,7 @@ class LinkAnalysisDeprecationWarning(DeprecationWarning):
 warnings.simplefilter("once", LinkAnalysisDeprecationWarning)
 
 
-_RELEASE = True
+_RELEASE = False
 
 if not _RELEASE:
     _component_func = components.declare_component(
@@ -40,8 +40,6 @@ def st_link_analysis(
     height: int = 500,
     key: Optional[str] = None,
     on_change: Optional[Callable[..., None]] = None,
-    node_actions: list[Literal["remove", "expand"]] = [],
-    enable_node_actions: Optional[bool] = None,  # deprecated
     events: list[Event] = [],
 ) -> None:
     """
@@ -70,52 +68,29 @@ def st_link_analysis(
         instances of the component to exist in the same Streamlit app without
         conflicts. Setting this parameter is also important to avoid unnecessary
         re-rendering of the component.
-    node_actions: list[Literal['remove', 'expand']], default []
-        Specifies the actions to enable for nodes. Valid options are 'remove' and
-        'expand'. 'remove' allows nodes to be removed via delete keydown or a remove
-        button click. 'expand' allows nodes to be expanded via double-click or an expand
-        button click. When any of these actions are triggered, the event information is
-        sent back to the Streamlit app as the component's return value. CAUTION: keeping
-        an edge with missing source or target IDs will lead to an error.
-    enable_node_actions: bool, default None (deprecated)
-        This parameter is deprecated and will be removed in a future release. Use
-        `node_actions` instead to enable node actions. If `enable_node_actions` is set
-        to True and `node_actions` is not provided, default actions ('remove', 'expand')
-        will be enabled.
     events: list[Event], default []
         For advanced usage only. A list of events to listen to.  When any of these
         events are triggered, the event information is sent back to the Streamlit
         app as the component's return value. NOTE: only defined once. Changing the
         list of events requires remounting the component.
     """
-    node_styles = [n.dump() for n in node_styles]
-    edge_styles = [e.dump() for e in edge_styles]
-    style = node_styles + edge_styles
+    _node_styles = [n.dump() for n in node_styles]
+    _edge_styles = [e.dump() for e in edge_styles]
+    _style = _node_styles + _edge_styles
 
-    height = str(height) + "px"
+    _height = str(height) + "px"
 
     if isinstance(layout, str):
         layout = LAYOUTS[layout]
 
-    events = [e.dump() for e in events]
-
-    # TODO: remove in next version along with imports, docs, and signature
-    if enable_node_actions is not None:
-        warnings.warn(
-            "Paramter `enable_node_actions` is deprecated and will be removed in a future release. "
-            "Please use the `node_actions` parameter instead.",
-            LinkAnalysisDeprecationWarning,
-        )
-    if enable_node_actions and not node_actions:
-        node_actions = ["remove", "expand"]
+    _events = [e.dump() for e in events]
 
     return _component_func(
         elements=elements,
-        style=style,
+        style=_style,
         layout=layout,
-        height=height,
+        height=_height,
         key=key,
         on_change=on_change,
-        nodeActions=node_actions,
-        events=events,
+        events=_events,
     )
