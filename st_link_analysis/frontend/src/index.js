@@ -5,7 +5,6 @@ import { debounce } from "./utils/helpers.js";
 import initCyto, { graph } from "./components/graph.js";
 import initToolbar from "./components/toolbar.js";
 import initViewbar from "./components/viewbar.js";
-import initNodeActions, { animateNeighbors } from "./components/nodeActions.js";
 import updateInfopanel from "./components/infopanel.js";
 
 // Constants / Configurations
@@ -39,27 +38,13 @@ function onRender(event) {
         cy = initCyto(args["events"]);
         cy.json({ elements: args["elements"] });
         elements = newElements;
-        initNodeActions(args["nodeActions"]);
         initToolbar();
         initViewbar();
     }
     // Elements dynamic update
     if (newElements != elements) {
         elements = newElements;
-        const lastExpanded = State.getState("lastExpanded");
-        if (lastExpanded === false) {
-            // default behavior
-            cy.json({ elements: args["elements"] });
-        } else {
-            // if last action === expand
-            const newNodes = cy
-                .add([
-                    ...args["elements"]["nodes"],
-                    ...args["elements"]["edges"],
-                ])
-                .filter("node");
-            animateNeighbors(lastExpanded, newNodes);
-        }
+        cy.json({ elements: args["elements"] });
     }
     State.updateState("lastExpanded", false);
 
